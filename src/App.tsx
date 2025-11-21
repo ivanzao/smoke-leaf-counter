@@ -1,0 +1,120 @@
+import { useState, useEffect } from "react";
+import { Toaster } from "@/components/ui/toaster";
+import { Toaster as Sonner, toast } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { Cigarette, Leaf } from "lucide-react";
+import { CounterCard } from "@/components/CounterCard";
+import { CalendarView } from "@/components/CalendarView";
+
+interface DayData {
+  date: string;
+  cigarette: number;
+  leaf: number;
+}
+
+const getTodayKey = () => {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
+const App = () => {
+  const [data, setData] = useState<Record<string, DayData>>({});
+  const today = getTodayKey();
+
+  useEffect(() => {
+    const stored = localStorage.getItem('smoking-tracker');
+    if (stored) {
+      setData(JSON.parse(stored));
+    }
+  }, []);
+
+  useEffect(() => {
+    if (Object.keys(data).length > 0) {
+      localStorage.setItem('smoking-tracker', JSON.stringify(data));
+    }
+  }, [data]);
+
+  const incrementCount = (type: 'cigarette' | 'leaf') => {
+    setData((prev) => {
+      const todayData = prev[today] || { date: today, cigarette: 0, leaf: 0 };
+      const newCount = todayData[type] + 1;
+      
+      toast.success(`+1 ${type === 'cigarette' ? 'cigarro' : 'folha'}`, {
+        description: `Total hoje: ${newCount}`,
+        duration: 2000,
+      });
+
+      return {
+        ...prev,
+        [today]: {
+          ...todayData,
+          [type]: newCount,
+        },
+      };
+    });
+  };
+
+  const resetCount = (type: 'cigarette' | 'leaf') => {
+    setData((prev) => {
+      const todayData = prev[today] || { date: today, cigarette: 0, leaf: 0 };
+      
+      toast.info(`Contador ${type === 'cigarette' ? 'cigarro' : 'folha'} zerado`, {
+        description: 'Contagem de hoje reiniciada',
+        duration: 2000,
+      });
+
+      return {
+        ...prev,
+        [today]: {
+          ...todayData,
+          [type]: 0,
+        },
+      };
+    });
+  };
+
+  const todayData = data[today] || { date: today, cigarette: 0, leaf: 0 };
+
+  return (
+    <TooltipProvider>
+      <Toaster />
+      <Sonner />
+      <div className="min-h-screen bg-background">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
+          <header className="text-center mb-12">
+            <h1 className="text-4xl sm:text-5xl font-bold text-foreground mb-2">
+              Tracker
+            </h1>
+            <p className="text-muted-foreground">Monitore seus hábitos diariamente</p>
+          </header>
+
+          <div className="grid md:grid-cols-2 gap-6 mb-12">
+            <CounterCard
+              icon={Cigarette}
+              label="Cigarro"
+              count={todayData.cigarette}
+              variant="cigarette"
+              onClick={() => incrementCount('cigarette')}
+              onReset={() => resetCount('cigarette')}
+            />
+            <CounterCard
+              icon={Leaf}
+              label="Folha"
+              count={todayData.leaf}
+              variant="leaf"
+              onClick={() => incrementCount('leaf')}
+              onReset={() => resetCount('leaf')}
+            />
+          </div>
+
+          <CalendarView data={data} />
+        </div>
+      </div>
+    </TooltipProvider>
+  );
+};
+
+export default App;
