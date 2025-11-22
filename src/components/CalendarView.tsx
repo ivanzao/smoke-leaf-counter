@@ -1,6 +1,8 @@
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Cigarette, Leaf } from "lucide-react";
+import { getNowGMT3, formatDateGMT3, getStartOfMonthGMT3, getEndOfMonthGMT3 } from "@/lib/date-utils";
+import { MonthlyChart } from "./MonthlyChart";
 
 interface DayData {
   date: string;
@@ -15,7 +17,7 @@ interface CalendarViewProps {
 export const CalendarView = ({ data }: CalendarViewProps) => {
   const getWeekDays = () => {
     const days = [];
-    const today = new Date();
+    const today = getNowGMT3();
     for (let i = 6; i >= 0; i--) {
       const date = new Date(today);
       date.setDate(date.getDate() - i);
@@ -26,29 +28,24 @@ export const CalendarView = ({ data }: CalendarViewProps) => {
 
   const getMonthDays = () => {
     const days = [];
-    const today = new Date();
-    const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
-    const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-    
+    const firstDay = getStartOfMonthGMT3();
+    const lastDay = getEndOfMonthGMT3();
+
     for (let d = new Date(firstDay); d <= lastDay; d.setDate(d.getDate() + 1)) {
       days.push(new Date(d));
     }
     return days;
   };
 
-  const formatDate = (date: Date) => {
-    return date.toISOString().split('T')[0];
-  };
-
   const getDayData = (date: Date) => {
-    const dateStr = formatDate(date);
+    const dateStr = formatDateGMT3(date, 'yyyy-MM-dd');
     return data[dateStr] || { date: dateStr, cigarette: 0, leaf: 0 };
   };
 
   const DayCell = ({ date, isToday }: { date: Date; isToday?: boolean }) => {
     const dayData = getDayData(date);
     const total = dayData.cigarette + dayData.leaf;
-    
+
     return (
       <div className={`
         flex flex-col items-center gap-2 p-3 rounded-2xl transition-all
@@ -56,9 +53,9 @@ export const CalendarView = ({ data }: CalendarViewProps) => {
         ${total > 0 ? 'opacity-100' : 'opacity-40'}
       `}>
         <div className="text-xs font-medium text-muted-foreground">
-          {date.toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' })}
+          {formatDateGMT3(date, 'dd MMM')}
         </div>
-        
+
         <div className="flex gap-2 items-center">
           {dayData.cigarette > 0 && (
             <div className="flex items-center gap-1">
@@ -73,7 +70,7 @@ export const CalendarView = ({ data }: CalendarViewProps) => {
             </div>
           )}
         </div>
-        
+
         {total === 0 && (
           <span className="text-xs text-muted-foreground">—</span>
         )}
@@ -83,7 +80,8 @@ export const CalendarView = ({ data }: CalendarViewProps) => {
 
   const weekDays = getWeekDays();
   const monthDays = getMonthDays();
-  const today = new Date();
+  const today = getNowGMT3();
+  const todayStr = formatDateGMT3(today, 'yyyy-MM-dd');
 
   return (
     <Card className="p-6 sm:p-8" style={{ boxShadow: "var(--shadow-soft)" }}>
@@ -92,29 +90,21 @@ export const CalendarView = ({ data }: CalendarViewProps) => {
           <TabsTrigger value="week" className="rounded-xl">Semana</TabsTrigger>
           <TabsTrigger value="month" className="rounded-xl">Mês</TabsTrigger>
         </TabsList>
-        
+
         <TabsContent value="week" className="mt-0">
           <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-3">
             {weekDays.map((date) => (
-              <DayCell 
-                key={date.toISOString()} 
+              <DayCell
+                key={date.toISOString()}
                 date={date}
-                isToday={formatDate(date) === formatDate(today)}
+                isToday={formatDateGMT3(date, 'yyyy-MM-dd') === todayStr}
               />
             ))}
           </div>
         </TabsContent>
-        
+
         <TabsContent value="month" className="mt-0">
-          <div className="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-7 gap-3">
-            {monthDays.map((date) => (
-              <DayCell 
-                key={date.toISOString()} 
-                date={date}
-                isToday={formatDate(date) === formatDate(today)}
-              />
-            ))}
-          </div>
+          <MonthlyChart data={data} currentMonthDays={monthDays} />
         </TabsContent>
       </Tabs>
     </Card>
