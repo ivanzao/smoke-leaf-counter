@@ -1,4 +1,4 @@
-import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis, CartesianGrid } from "recharts";
 import { Card } from "@/components/ui/card";
 import { formatDateGMT3 } from "@/lib/date-utils";
 
@@ -29,17 +29,18 @@ export const MonthlyChart = ({ data, currentMonthDays }: MonthlyChartProps) => {
         <div className="h-[200px] w-full mt-4 mb-6" style={{ fontFamily: 'inherit' }}>
             <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={chartData}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--muted-foreground))" opacity={0.1} />
                     <XAxis
                         dataKey="day"
                         tickLine={false}
-                        axisLine={false}
+                        axisLine={true}
                         tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))', fontFamily: 'sans-serif' }}
                         interval={2}
                     />
                     <YAxis
                         domain={[0, 6]}
                         tickLine={false}
-                        axisLine={false}
+                        axisLine={true}
                         tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))', fontFamily: 'sans-serif' }}
                         width={20}
                     />
@@ -73,14 +74,12 @@ export const MonthlyChart = ({ data, currentMonthDays }: MonthlyChartProps) => {
                         fill="#ba5f27"
                         fillOpacity={0.8}
                         radius={[4, 4, 0, 0]}
-                        stackId="a"
                     />
                     <Bar
                         dataKey="leaf"
                         fill="#27ba42"
                         fillOpacity={0.8}
                         radius={[4, 4, 0, 0]}
-                        stackId="a"
                     />
                 </BarChart>
             </ResponsiveContainer>

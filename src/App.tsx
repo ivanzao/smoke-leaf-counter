@@ -77,15 +77,15 @@ const App = () => {
       <Toaster />
       <Sonner />
       <div className="min-h-screen bg-background">
-        <div className="max-w-6xl mx-auto px-4 py-6 sm:px-6 sm:py-12">
-          <header className="text-center mb-12">
+        <div className="max-w-6xl mx-auto px-4 py-6 sm:px-6 sm:py-8">
+          <header className="text-center mb-8">
             <h1 className="text-4xl sm:text-5xl font-bold text-foreground mb-2">
               Puff Tracker
             </h1>
             <p className="text-muted-foreground">do but don't forget</p>
           </header>
 
-          <div className="grid grid-cols-2 gap-4 sm:gap-6 mb-12">
+          <div className="grid grid-cols-2 gap-4 sm:gap-6 mb-8">
             <CounterCard
               icon={Cigarette}
               label="Cigarro"
