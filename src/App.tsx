@@ -6,13 +6,17 @@ import { Cigarette, Leaf } from "lucide-react";
 import { CounterCard } from "@/components/CounterCard";
 import { CalendarView } from "@/components/CalendarView";
 
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { formatDateGMT3, getTodayKeyGMT3 } from "@/lib/date-utils";
+
 interface DayData {
   date: string;
   cigarette: number;
   leaf: number;
 }
-
-import { getTodayKeyGMT3 } from "@/lib/date-utils";
 
 const App = () => {
   const [data, setData] = useState<Record<string, DayData>>({});
@@ -70,6 +74,35 @@ const App = () => {
     });
   };
 
+  /* Dialog State */
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const [cigaretteCount, setCigaretteCount] = useState(0);
+  const [leafCount, setLeafCount] = useState(0);
+
+  const openEditDialog = (dateStr: string) => {
+    const dayData = data[dateStr] || { date: dateStr, cigarette: 0, leaf: 0 };
+    setSelectedDate(dateStr);
+    setCigaretteCount(dayData.cigarette);
+    setLeafCount(dayData.leaf);
+    setIsDialogOpen(true);
+  };
+
+  const handleSave = () => {
+    if (selectedDate) {
+      setData((prev) => ({
+        ...prev,
+        [selectedDate]: {
+          date: selectedDate,
+          cigarette: Number(cigaretteCount),
+          leaf: Number(leafCount)
+        }
+      }));
+      toast.success('Dados atualizados com sucesso!');
+      setIsDialogOpen(false);
+    }
+  };
+
   const todayData = data[today] || { date: today, cigarette: 0, leaf: 0 };
 
   return (
@@ -104,8 +137,48 @@ const App = () => {
             />
           </div>
 
-          <CalendarView data={data} />
+          <CalendarView
+            data={data}
+            onDayClick={(date) => openEditDialog(date)}
+          />
         </div>
+
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle>Editar dia {selectedDate ? formatDateGMT3(new Date(selectedDate), 'dd/MM/yyyy') : ''}</DialogTitle>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="cigarette" className="text-right">
+                  Cigarro
+                </Label>
+                <Input
+                  id="cigarette"
+                  type="number"
+                  value={cigaretteCount}
+                  onChange={(e) => setCigaretteCount(Number(e.target.value))}
+                  className="col-span-3"
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="leaf" className="text-right">
+                  Folha
+                </Label>
+                <Input
+                  id="leaf"
+                  type="number"
+                  value={leafCount}
+                  onChange={(e) => setLeafCount(Number(e.target.value))}
+                  className="col-span-3"
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button type="submit" onClick={handleSave}>Salvar alterações</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </TooltipProvider>
   );

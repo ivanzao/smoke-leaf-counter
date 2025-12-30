@@ -12,9 +12,10 @@ interface DayData {
 
 interface CalendarViewProps {
   data: Record<string, DayData>;
+  onDayClick: (date: string) => void;
 }
 
-export const CalendarView = ({ data }: CalendarViewProps) => {
+export const CalendarView = ({ data, onDayClick }: CalendarViewProps) => {
   const getWeekDays = () => {
     const days = [];
     const today = getNowGMT3();
@@ -47,8 +48,10 @@ export const CalendarView = ({ data }: CalendarViewProps) => {
     const total = dayData.cigarette + dayData.leaf;
 
     return (
-      <div className={`
-        flex flex-col items-center gap-2 p-3 rounded-2xl transition-all
+      <div
+        onClick={() => onDayClick(formatDateGMT3(date, 'yyyy-MM-dd'))}
+        className={`
+        flex flex-col items-center gap-2 p-3 rounded-2xl transition-all cursor-pointer hover:scale-105 active:scale-95
         ${isToday ? 'bg-accent ring-2 ring-primary' : 'bg-card'}
         ${total > 0 ? 'opacity-100' : 'opacity-40'}
       `}>
@@ -104,7 +107,7 @@ export const CalendarView = ({ data }: CalendarViewProps) => {
         </TabsContent>
 
         <TabsContent value="month" className="mt-0">
-          <MonthlyChart data={data} currentMonthDays={monthDays} />
+          <MonthlyChart data={data} currentMonthDays={monthDays} onDayClick={onDayClick} />
         </TabsContent>
       </Tabs>
     </Card>
